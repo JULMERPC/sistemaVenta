@@ -14,5 +14,5 @@ public class ProductoTerminadoDTO {
     private Integer stockActual;
     private Integer stockMinimo;
 
-    private List<ComposicionDTO> composiciones;
+    private List<StockAlmacenDTO> composiciones;
 }

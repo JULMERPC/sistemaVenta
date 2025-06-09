@@ -3,7 +3,6 @@ package com.example.msalmacen.service;
 
 import com.example.msalmacen.client.ProveedorClient;
 import com.example.msalmacen.dto.IngresoMateriaPrimaDTO;
-import com.example.msalmacen.dto.ProveedorDTO;
 import com.example.msalmacen.entity.Almacen;
 import com.example.msalmacen.entity.IngresoMateriaPrima;
 import com.example.msalmacen.repository.AlmacenRepository;
