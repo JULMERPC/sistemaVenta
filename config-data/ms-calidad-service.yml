@@ -1,0 +1,32 @@
+server:
+  port: ${PORT:${SERVER_PORT:0}}
+
+spring:
+  application:
+    name: ms-calidad-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/db_calidad?useSSL=false&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password:  # <-- Agrega tu contraseña si tu MySQL tiene una
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8090/eureka}
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
