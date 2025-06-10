@@ -127,6 +127,7 @@ package com.example.msalmacen.dto;
 import lombok.*;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -163,7 +164,7 @@ public class DetalleIngresoDTO {
     private Boolean estadoMateriaPrima;
 
     // Información del ingreso (para consultas)
-    private LocalDateTime fechaIngreso;
+    private LocalDate fechaIngreso;
     private String proveedorIngreso;
     private String numeroDocumento;
 
@@ -199,6 +200,18 @@ public class DetalleIngresoDTO {
                 materiaPrimaId != null &&
                 cantidad != null && cantidad.compareTo(BigDecimal.ZERO) > 0 &&
                 costoUnitario != null && costoUnitario.compareTo(BigDecimal.ZERO) > 0;
+    }
+
+    public void setCostoTotal(BigDecimal costoTotal) {
+        this.costoTotal = costoTotal;
+    }
+
+    public LocalDate getFechaIngreso() {
+        return fechaIngreso;
+    }
+
+    public void setFechaIngreso(LocalDate fechaIngreso) {
+        this.fechaIngreso = fechaIngreso;
     }
 
     // Getters y Setters explícitos
@@ -276,13 +289,7 @@ public class DetalleIngresoDTO {
         this.estadoMateriaPrima = estadoMateriaPrima;
     }
 
-    public LocalDateTime getFechaIngreso() {
-        return fechaIngreso;
-    }
 
-    public void setFechaIngreso(LocalDateTime fechaIngreso) {
-        this.fechaIngreso = fechaIngreso;
-    }
 
     public String getProveedorIngreso() {
         return proveedorIngreso;
