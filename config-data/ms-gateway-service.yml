@@ -24,15 +24,10 @@ spring:
           filters:
             - AuthFilter
 
-        - id: ms-cliente-service
-          uri: lb://ms-cliente-service
-          predicates:
-            - Path=/api/clientes**
-
         - id: ms-venta-service
           uri: lb://ms-venta-service
           predicates:
-            - Path=/api/ventas**
+            - Path=/api/clientes**
 
 
         - id: ms-auth-service
