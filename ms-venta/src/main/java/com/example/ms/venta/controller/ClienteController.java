@@ -4,6 +4,7 @@ import com.example.ms.venta.dto.ClienteDto;
 import com.example.ms.venta.service.ClienteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,8 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class ClienteController {
 
-    private final ClienteService clienteService;
+    @Autowired
+    private ClienteService clienteService;
 
     // Crear cliente
     @PostMapping
