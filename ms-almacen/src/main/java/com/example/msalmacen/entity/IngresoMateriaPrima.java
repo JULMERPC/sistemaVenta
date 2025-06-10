@@ -1,12 +1,17 @@
 package com.example.msalmacen.entity;
 
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ingreso_materia_prima")
+@Table(name = "ingresos_materia_prima")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,75 +22,55 @@ public class IngresoMateriaPrima {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_proveedor", nullable = false)
-    private Long idProveedor; // FK hacia Proveedor
+    @Column(name = "proveedor_id", nullable = false)
+    @NotNull(message = "El proveedor es obligatorio")
+    private Long proveedorId;
+
+    @Column(name = "almacen_id", nullable = false)
+    @NotNull(message = "El almacén es obligatorio")
+    private Long almacenId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_almacen", nullable = false)
+    @JoinColumn(name = "almacen_id", insertable = false, updatable = false)
     private Almacen almacen;
 
-    @Column(name = "fecha_ingreso", nullable = false)
-    private LocalDateTime fechaIngreso;
+    @Column(nullable = false)
+    @NotNull(message = "La fecha es obligatoria")
+    private LocalDate fecha;
 
-    @Column(name = "documento_ref", length = 100)
-    private String documentoRef; // factura, boleta, etc.
+    @Column(name = "tipo_documento", length = 20, nullable = false)
+    @NotBlank(message = "El tipo de documento es obligatorio")
+    @Size(max = 20, message = "El tipo de documento no puede exceder 20 caracteres")
+    private String tipoDocumento; // factura, boleta
 
-    @Column(columnDefinition = "TEXT")
-    private String observaciones;
+    @Column(name = "nro_documento", length = 30, nullable = false)
+    @NotBlank(message = "El número de documento es obligatorio")
+    @Size(max = 30, message = "El número de documento no puede exceder 30 caracteres")
+    private String nroDocumento; // F001-000123
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    @NotNull(message = "El total es obligatorio")
+    @DecimalMin(value = "0.0", inclusive = false, message = "El total debe ser mayor a 0")
+    private BigDecimal total;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @PrePersist
     public void prePersist() {
-        if (fechaIngreso == null) {
-            fechaIngreso = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+        if (fecha == null) {
+            fecha = LocalDate.now();
         }
     }
 
-    // Getters y Setters explícitos
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getIdProveedor() {
-        return idProveedor;
-    }
-
-    public void setIdProveedor(Long idProveedor) {
-        this.idProveedor = idProveedor;
-    }
-
-    public Almacen getAlmacen() {
-        return almacen;
-    }
-
-    public void setAlmacen(Almacen almacen) {
-        this.almacen = almacen;
-    }
-
-    public LocalDateTime getFechaIngreso() {
-        return fechaIngreso;
-    }
-
-    public void setFechaIngreso(LocalDateTime fechaIngreso) {
-        this.fechaIngreso = fechaIngreso;
-    }
-
-    public String getDocumentoRef() {
-        return documentoRef;
-    }
-
-    public void setDocumentoRef(String documentoRef) {
-        this.documentoRef = documentoRef;
-    }
-
-    public String getObservaciones() {
-        return observaciones;
-    }
-
-    public void setObservaciones(String observaciones) {
-        this.observaciones = observaciones;
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

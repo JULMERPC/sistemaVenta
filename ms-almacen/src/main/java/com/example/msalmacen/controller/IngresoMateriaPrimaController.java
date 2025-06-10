@@ -2,21 +2,26 @@ package com.example.msalmacen.controller;
 
 import com.example.msalmacen.dto.IngresoMateriaPrimaDTO;
 import com.example.msalmacen.service.IngresoMateriaPrimaService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import jakarta.validation.Valid;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/ingresos-materia-prima")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
+@CrossOrigin(origins = "*")
 public class IngresoMateriaPrimaController {
 
     private final IngresoMateriaPrimaService ingresoService;
@@ -27,7 +32,7 @@ public class IngresoMateriaPrimaController {
             List<IngresoMateriaPrimaDTO> ingresos = ingresoService.obtenerTodos();
             return ResponseEntity.ok(ingresos);
         } catch (Exception e) {
-            log.error("Error al obtener todos los ingresos: {}", e.getMessage(), e);
+            log.error("Error al obtener todos los ingresos: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -35,101 +40,137 @@ public class IngresoMateriaPrimaController {
     @GetMapping("/{id}")
     public ResponseEntity<IngresoMateriaPrimaDTO> obtenerPorId(@PathVariable Long id) {
         try {
-            return ingresoService.obtenerPorId(id)
-                    .map(ingreso -> ResponseEntity.ok(ingreso))
+            Optional<IngresoMateriaPrimaDTO> ingreso = ingresoService.obtenerPorId(id);
+            return ingreso.map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
-            log.error("Error al obtener ingreso por ID {}: {}", id, e.getMessage(), e);
+            log.error("Error al obtener ingreso por ID {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PostMapping
-    public ResponseEntity<IngresoMateriaPrimaDTO> crear(@Valid @RequestBody IngresoMateriaPrimaDTO dto) {
+    public ResponseEntity<?> crear(@Valid @RequestBody IngresoMateriaPrimaDTO dto) {
         try {
             IngresoMateriaPrimaDTO ingresoCreado = ingresoService.crear(dto);
             return ResponseEntity.status(HttpStatus.CREATED).body(ingresoCreado);
         } catch (RuntimeException e) {
-            log.error("Error de validación al crear ingreso: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            log.error("Error al crear ingreso: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            log.error("Error al crear ingreso: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error interno al crear ingreso: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno del servidor");
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<IngresoMateriaPrimaDTO> actualizar(@PathVariable Long id,
-                                                             @Valid @RequestBody IngresoMateriaPrimaDTO dto) {
+    public ResponseEntity<?> actualizar(@PathVariable Long id,
+                                        @Valid @RequestBody IngresoMateriaPrimaDTO dto) {
         try {
             IngresoMateriaPrimaDTO ingresoActualizado = ingresoService.actualizar(id, dto);
             return ResponseEntity.ok(ingresoActualizado);
         } catch (RuntimeException e) {
-            log.error("Error de validación al actualizar ingreso {}: {}", id, e.getMessage());
-            return ResponseEntity.badRequest().build();
+            log.error("Error al actualizar ingreso {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            log.error("Error al actualizar ingreso {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error interno al actualizar ingreso {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno del servidor");
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
         try {
             ingresoService.eliminar(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             log.error("Error al eliminar ingreso {}: {}", id, e.getMessage());
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            log.error("Error al eliminar ingreso {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error interno al eliminar ingreso {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno del servidor");
         }
     }
 
-    // Endpoints de búsqueda específicos
-    @GetMapping("/proveedor/{idProveedor}")
-    public ResponseEntity<List<IngresoMateriaPrimaDTO>> obtenerPorProveedor(@PathVariable Long idProveedor) {
+    // Endpoints específicos para consultas
+    @GetMapping("/proveedor/{proveedorId}")
+    public ResponseEntity<List<IngresoMateriaPrimaDTO>> obtenerPorProveedor(
+            @PathVariable Long proveedorId) {
         try {
-            List<IngresoMateriaPrimaDTO> ingresos = ingresoService.obtenerPorProveedor(idProveedor);
+            List<IngresoMateriaPrimaDTO> ingresos = ingresoService.obtenerPorProveedor(proveedorId);
             return ResponseEntity.ok(ingresos);
         } catch (Exception e) {
-            log.error("Error al obtener ingresos por proveedor {}: {}", idProveedor, e.getMessage(), e);
+            log.error("Error al obtener ingresos por proveedor {}: {}", proveedorId, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/almacen/{idAlmacen}")
-    public ResponseEntity<List<IngresoMateriaPrimaDTO>> obtenerPorAlmacen(@PathVariable Long idAlmacen) {
+    @GetMapping("/almacen/{almacenId}")
+    public ResponseEntity<List<IngresoMateriaPrimaDTO>> obtenerPorAlmacen(
+            @PathVariable Long almacenId) {
         try {
-            List<IngresoMateriaPrimaDTO> ingresos = ingresoService.obtenerPorAlmacen(idAlmacen);
+            List<IngresoMateriaPrimaDTO> ingresos = ingresoService.obtenerPorAlmacen(almacenId);
             return ResponseEntity.ok(ingresos);
         } catch (Exception e) {
-            log.error("Error al obtener ingresos por almacén {}: {}", idAlmacen, e.getMessage(), e);
+            log.error("Error al obtener ingresos por almacén {}: {}", almacenId, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/buscar-por-fecha")
+    @GetMapping("/fechas")
     public ResponseEntity<List<IngresoMateriaPrimaDTO>> obtenerPorRangoFechas(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
         try {
             List<IngresoMateriaPrimaDTO> ingresos = ingresoService.obtenerPorRangoFechas(fechaInicio, fechaFin);
             return ResponseEntity.ok(ingresos);
         } catch (Exception e) {
-            log.error("Error al obtener ingresos por rango de fechas: {}", e.getMessage(), e);
+            log.error("Error al obtener ingresos por rango de fechas: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/buscar-por-documento")
-    public ResponseEntity<List<IngresoMateriaPrimaDTO>> obtenerPorDocumento(@RequestParam String documento) {
+    @GetMapping("/documento/{nroDocumento}")
+    public ResponseEntity<IngresoMateriaPrimaDTO> obtenerPorNumeroDocumento(
+            @PathVariable String nroDocumento) {
         try {
-            List<IngresoMateriaPrimaDTO> ingresos = ingresoService.obtenerPorDocumento(documento);
-            return ResponseEntity.ok(ingresos);
+            Optional<IngresoMateriaPrimaDTO> ingreso = ingresoService.obtenerPorNumeroDocumento(nroDocumento);
+            return ingreso.map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
-            log.error("Error al obtener ingresos por documento {}: {}", documento, e.getMessage(), e);
+            log.error("Error al obtener ingreso por número de documento {}: {}", nroDocumento, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Endpoints para reportes y totales
+    @GetMapping("/total/proveedor/{proveedorId}")
+    public ResponseEntity<BigDecimal> obtenerTotalPorProveedorYFecha(
+            @PathVariable Long proveedorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+        try {
+            BigDecimal total = ingresoService.obtenerTotalPorProveedorYFecha(proveedorId, fechaInicio, fechaFin);
+            return ResponseEntity.ok(total);
+        } catch (Exception e) {
+            log.error("Error al obtener total por proveedor y fecha: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/total/almacen/{almacenId}")
+    public ResponseEntity<BigDecimal> obtenerTotalPorAlmacenYFecha(
+            @PathVariable Long almacenId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+        try {
+            BigDecimal total = ingresoService.obtenerTotalPorAlmacenYFecha(almacenId, fechaInicio, fechaFin);
+            return ResponseEntity.ok(total);
+        } catch (Exception e) {
+            log.error("Error al obtener total por almacén y fecha: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
