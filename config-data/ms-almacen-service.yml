@@ -52,7 +52,7 @@ spring:
     name: ms-almacen-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/ms-almacen
+    url: jdbc:mysql://localhost:3306/db_almacen
     username: root
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
