@@ -1,10 +1,6 @@
 package com.example.ms.venta.util;
 
-import com.example.ms.venta.entity.Proveedor;
-import com.example.ms.venta.repository.ProveedorRepository;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Component
 public class ProveedorSeeder {
