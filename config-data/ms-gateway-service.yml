@@ -27,7 +27,7 @@ spring:
         - id: ms-venta-service
           uri: lb://ms-venta-service
           predicates:
-            - Path=/api/clientes**
+            - Path=/api/clientes/**, /api/detalle-ventas/**, /api/ventas/**
 
 
         - id: ms-auth-service
@@ -49,7 +49,7 @@ spring:
         - id: ms-almacen-service
           uri: lb://ms-almacen-service
           predicates:
-            - Path=/api/productos-terminados/**, /api/productos/**, /api/almacenes/**, /api/detalle-ingresos/**, /api/ingresos-materia-prima/**, /api/stock-almacen/**
+            - Path=/api/almacenes/**, /api/detalle-ingresos/**, /api/ingresos-materia-prima/**, /api/materias-primas/**, /api/stock-almacen/**
 #          filters:
 #            - AuthFilter
 
