@@ -1,17 +1,6 @@
 package com.example.msalmacen.util;
 
-import com.example.msalmacen.entity.MateriaPrima;
-import com.example.msalmacen.repository.MateriaPrimaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
-
-import java.util.Arrays;
-import java.util.List;
 
 @Component
 //public class MateriaPrimaSeeder implements CommandLineRunner {

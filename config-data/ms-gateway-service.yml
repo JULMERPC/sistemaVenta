@@ -45,8 +45,8 @@ spring:
           uri: lb://ms-proveedor2-service
           predicates:
             - Path=/api/proveedores/**
-          filters:
-            - AuthFilter
+#          filters:
+#            - AuthFilter
 
 
 
@@ -55,8 +55,8 @@ spring:
           uri: lb://ms-almacen-service
           predicates:
             - Path=/api/productos-terminados/**, /api/productos/**, /api/almacenes/**, /api/detalle-ingresos/**, /api/ingresos-materia-prima/**, /api/stock-almacen/**
-          filters:
-            - AuthFilter
+#          filters:
+#            - AuthFilter
 
 
 
