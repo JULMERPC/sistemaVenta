@@ -1,4 +1,3 @@
-
 package com.example.msalmacen.service;
 
 import com.example.msalmacen.dto.DetalleIngresoDTO;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,189 +25,166 @@ import java.util.stream.Collectors;
 public class DetalleIngresoService {
 
     private final DetalleIngresoRepository detalleIngresoRepository;
-    private final MateriaPrimaRepository materiaPrimaRepository;
     private final IngresoMateriaPrimaRepository ingresoMateriaPrimaRepository;
+    private final MateriaPrimaRepository materiaPrimaRepository;
 
     // Crear un nuevo detalle de ingreso
-    public DetalleIngresoDTO crearDetalleIngreso(DetalleIngresoDTO detalleDTO) {
-        log.info("Creando detalle de ingreso para materia prima ID: {}", detalleDTO.getMateriaPrimaId());
+    public DetalleIngresoDTO crearDetalleIngreso(DetalleIngresoDTO detalleIngresoDTO) {
+        log.info("Creando detalle de ingreso para Ingreso ID: {} y Materia Prima ID: {}",
+                detalleIngresoDTO.getIngresoMateriaPrimaId(), detalleIngresoDTO.getMateriaPrimaId());
 
-        // Validar que la materia prima existe y está activa
-        MateriaPrima materiaPrima = materiaPrimaRepository.findById(detalleDTO.getMateriaPrimaId())
-                .orElseThrow(() -> new RuntimeException("Materia prima no encontrada con ID: " + detalleDTO.getMateriaPrimaId()));
+        // Verificar que el ingreso existe
+        IngresoMateriaPrima ingreso = ingresoMateriaPrimaRepository
+                .findById(detalleIngresoDTO.getIngresoMateriaPrimaId())
+                .orElseThrow(() -> new RuntimeException("Ingreso de materia prima no encontrado"));
 
-        if (!materiaPrima.isActiva()) {
-            throw new RuntimeException("La materia prima está inactiva y no se puede ingresar");
+        // Verificar que la materia prima existe
+        MateriaPrima materiaPrima = materiaPrimaRepository
+                .findById(detalleIngresoDTO.getMateriaPrimaId())
+                .orElseThrow(() -> new RuntimeException("Materia prima no encontrada"));
+
+        // Verificar que no existe ya un detalle para este ingreso y materia prima
+        if (detalleIngresoRepository.existsByIngresoAndMateriaPrima(
+                detalleIngresoDTO.getIngresoMateriaPrimaId(),
+                detalleIngresoDTO.getMateriaPrimaId())) {
+            throw new RuntimeException("Ya existe un detalle para este ingreso y materia prima");
         }
 
-        // Validar que el ingreso existe
-        IngresoMateriaPrima ingreso = ingresoMateriaPrimaRepository.findById(detalleDTO.getIngresoMateriaPrimaId())
-                .orElseThrow(() -> new RuntimeException("Ingreso de materia prima no encontrado con ID: " + detalleDTO.getIngresoMateriaPrimaId()));
-
-        // Verificar si ya existe un detalle para esta materia prima en este ingreso
-        boolean existeDetalle = detalleIngresoRepository.existsByIngresoMateriaPrimaIdAndMateriaPrimaId(
-                detalleDTO.getIngresoMateriaPrimaId(), detalleDTO.getMateriaPrimaId());
-
-        if (existeDetalle) {
-            throw new RuntimeException("Ya existe un detalle para esta materia prima en este ingreso");
-        }
-
-        // Crear la entidad
         DetalleIngreso detalleIngreso = DetalleIngreso.builder()
                 .ingresoMateriaPrima(ingreso)
                 .materiaPrima(materiaPrima)
-                .cantidad(detalleDTO.getCantidad())
-                .costoUnitario(detalleDTO.getCostoUnitario())
+                .cantidad(detalleIngresoDTO.getCantidad())
+                .costoUnitario(detalleIngresoDTO.getCostoUnitario())
                 .build();
 
-        DetalleIngreso detalleGuardado = detalleIngresoRepository.save(detalleIngreso);
-        log.info("Detalle de ingreso creado exitosamente con ID: {}", detalleGuardado.getId());
+        DetalleIngreso savedDetalle = detalleIngresoRepository.save(detalleIngreso);
+        log.info("Detalle de ingreso creado con ID: {}", savedDetalle.getId());
 
-        return convertirADTO(detalleGuardado);
+        return convertToDTO(savedDetalle);
     }
 
-    // Actualizar un detalle de ingreso existente
-    public DetalleIngresoDTO actualizarDetalleIngreso(Long id, DetalleIngresoDTO detalleDTO) {
-        log.info("Actualizando detalle de ingreso con ID: {}", id);
-
-        DetalleIngreso detalleExistente = detalleIngresoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Detalle de ingreso no encontrado con ID: " + id));
-
-        // Validar que la materia prima existe y está activa
-        MateriaPrima materiaPrima = materiaPrimaRepository.findById(detalleDTO.getMateriaPrimaId())
-                .orElseThrow(() -> new RuntimeException("Materia prima no encontrada con ID: " + detalleDTO.getMateriaPrimaId()));
-
-        if (!materiaPrima.isActiva()) {
-            throw new RuntimeException("La materia prima está inactiva y no se puede actualizar");
-        }
-
-        // Actualizar los campos
-        detalleExistente.setMateriaPrima(materiaPrima);
-        detalleExistente.setCantidad(detalleDTO.getCantidad());
-        detalleExistente.setCostoUnitario(detalleDTO.getCostoUnitario());
-
-        DetalleIngreso detalleActualizado = detalleIngresoRepository.save(detalleExistente);
-        log.info("Detalle de ingreso actualizado exitosamente con ID: {}", detalleActualizado.getId());
-
-        return convertirADTO(detalleActualizado);
-    }
-
-    // Obtener detalle por ID
-    @Transactional(readOnly = true)
-    public DetalleIngresoDTO obtenerDetallePorId(Long id) {
-        log.info("Buscando detalle de ingreso con ID: {}", id);
-
-        DetalleIngreso detalle = detalleIngresoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Detalle de ingreso no encontrado con ID: " + id));
-
-        return convertirADTO(detalle);
-    }
-
-    // Obtener todos los detalles de un ingreso específico
-    @Transactional(readOnly = true)
-    public List<DetalleIngresoDTO> obtenerDetallesPorIngresoId(Long ingresoId) {
-        log.info("Obteniendo detalles para ingreso ID: {}", ingresoId);
-
-        List<DetalleIngreso> detalles = detalleIngresoRepository.findDetallesConMateriaPrimaByIngresoId(ingresoId);
-        return detalles.stream()
-                .map(this::convertirADTO)
-                .collect(Collectors.toList());
-    }
-
-    // Obtener todos los detalles de una materia prima específica
-    @Transactional(readOnly = true)
-    public List<DetalleIngresoDTO> obtenerDetallesPorMateriaPrimaId(Long materiaPrimaId) {
-        log.info("Obteniendo detalles para materia prima ID: {}", materiaPrimaId);
-
-        List<DetalleIngreso> detalles = detalleIngresoRepository.findByMateriaPrimaId(materiaPrimaId);
-        return detalles.stream()
-                .map(this::convertirADTO)
-                .collect(Collectors.toList());
-    }
-
-    // Obtener todos los detalles
+    // Obtener todos los detalles de ingreso
     @Transactional(readOnly = true)
     public List<DetalleIngresoDTO> obtenerTodosLosDetalles() {
         log.info("Obteniendo todos los detalles de ingreso");
-
-        List<DetalleIngreso> detalles = detalleIngresoRepository.findAllOrderByFechaDesc();
-        return detalles.stream()
-                .map(this::convertirADTO)
+        return detalleIngresoRepository.findAll().stream()
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Eliminar detalle por ID
-    public void eliminarDetalle(Long id) {
+    // Obtener un detalle por ID
+    @Transactional(readOnly = true)
+    public Optional<DetalleIngresoDTO> obtenerDetallePorId(Long id) {
+        log.info("Obteniendo detalle de ingreso con ID: {}", id);
+        return detalleIngresoRepository.findById(id)
+                .map(this::convertToDTO);
+    }
+
+    // Obtener detalles por ingreso
+    @Transactional(readOnly = true)
+    public List<DetalleIngresoDTO> obtenerDetallesPorIngreso(Long ingresoId) {
+        log.info("Obteniendo detalles para el ingreso ID: {}", ingresoId);
+        return detalleIngresoRepository.findByIngresoMateriaPrimaIdWithDetails(ingresoId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Obtener detalles por materia prima
+    @Transactional(readOnly = true)
+    public List<DetalleIngresoDTO> obtenerDetallesPorMateriaPrima(Long materiaPrimaId) {
+        log.info("Obteniendo detalles para la materia prima ID: {}", materiaPrimaId);
+        return detalleIngresoRepository.findByMateriaPrimaId(materiaPrimaId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Actualizar un detalle de ingreso
+    public DetalleIngresoDTO actualizarDetalleIngreso(Long id, DetalleIngresoDTO detalleIngresoDTO) {
+        log.info("Actualizando detalle de ingreso con ID: {}", id);
+
+        DetalleIngreso detalleExistente = detalleIngresoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Detalle de ingreso no encontrado"));
+
+        // Actualizar campos
+        detalleExistente.setCantidad(detalleIngresoDTO.getCantidad());
+        detalleExistente.setCostoUnitario(detalleIngresoDTO.getCostoUnitario());
+
+        // Si se cambia la materia prima, verificar que exista
+        if (!detalleExistente.getMateriaPrima().getId().equals(detalleIngresoDTO.getMateriaPrimaId())) {
+            MateriaPrima nuevaMateriaPrima = materiaPrimaRepository
+                    .findById(detalleIngresoDTO.getMateriaPrimaId())
+                    .orElseThrow(() -> new RuntimeException("Materia prima no encontrada"));
+            detalleExistente.setMateriaPrima(nuevaMateriaPrima);
+        }
+
+        DetalleIngreso savedDetalle = detalleIngresoRepository.save(detalleExistente);
+        log.info("Detalle de ingreso actualizado con ID: {}", savedDetalle.getId());
+
+        return convertToDTO(savedDetalle);
+    }
+
+    // Eliminar un detalle de ingreso
+    public void eliminarDetalleIngreso(Long id) {
         log.info("Eliminando detalle de ingreso con ID: {}", id);
 
         if (!detalleIngresoRepository.existsById(id)) {
-            throw new RuntimeException("Detalle de ingreso no encontrado con ID: " + id);
+            throw new RuntimeException("Detalle de ingreso no encontrado");
         }
 
         detalleIngresoRepository.deleteById(id);
-        log.info("Detalle de ingreso eliminado exitosamente con ID: {}", id);
+        log.info("Detalle de ingreso eliminado con ID: {}", id);
     }
 
-    // Eliminar todos los detalles de un ingreso
-    public void eliminarDetallesPorIngresoId(Long ingresoId) {
-        log.info("Eliminando todos los detalles para ingreso ID: {}", ingresoId);
-
-        detalleIngresoRepository.deleteByIngresoMateriaPrimaId(ingresoId);
-        log.info("Detalles eliminados exitosamente para ingreso ID: {}", ingresoId);
-    }
-
-    // Calcular costo total por ingreso
+    // Obtener total de cantidad por materia prima
     @Transactional(readOnly = true)
-    public BigDecimal calcularCostoTotalPorIngreso(Long ingresoId) {
-        log.info("Calculando costo total para ingreso ID: {}", ingresoId);
-
-        Double costoTotal = detalleIngresoRepository.getCostoTotalByIngresoId(ingresoId);
-        return costoTotal != null ? BigDecimal.valueOf(costoTotal) : BigDecimal.ZERO;
+    public BigDecimal obtenerTotalCantidadPorMateriaPrima(Long materiaPrimaId) {
+        return detalleIngresoRepository.getTotalCantidadByMateriaPrima(materiaPrimaId);
     }
 
-    // Calcular cantidad total ingresada por materia prima
+    // Obtener total de costo por ingreso
     @Transactional(readOnly = true)
-    public BigDecimal calcularCantidadTotalPorMateriaPrima(Long materiaPrimaId) {
-        log.info("Calculando cantidad total ingresada para materia prima ID: {}", materiaPrimaId);
-
-        Double cantidadTotal = detalleIngresoRepository.getCantidadTotalByMateriaPrimaId(materiaPrimaId);
-        return cantidadTotal != null ? BigDecimal.valueOf(cantidadTotal) : BigDecimal.ZERO;
+    public BigDecimal obtenerTotalCostoPorIngreso(Long ingresoId) {
+        return detalleIngresoRepository.getTotalCostoByIngreso(ingresoId);
     }
 
-    // Crear múltiples detalles de ingreso
-    public List<DetalleIngresoDTO> crearMultiplesDetalles(List<DetalleIngresoDTO> detallesDTO) {
-        log.info("Creando {} detalles de ingreso", detallesDTO.size());
-
-        return detallesDTO.stream()
-                .map(this::crearDetalleIngreso)
+    // Obtener detalles por rango de fechas
+    @Transactional(readOnly = true)
+    public List<DetalleIngresoDTO> obtenerDetallesPorRangoFechas(LocalDate fechaInicio, LocalDate fechaFin) {
+        log.info("Obteniendo detalles entre {} y {}", fechaInicio, fechaFin);
+        return detalleIngresoRepository.findByFechaRange(fechaInicio, fechaFin).stream()
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Método privado para convertir entidad a DTO
-    private DetalleIngresoDTO convertirADTO(DetalleIngreso detalle) {
+    // Obtener último costo unitario de una materia prima
+    @Transactional(readOnly = true)
+    public Optional<BigDecimal> obtenerUltimoCostoUnitario(Long materiaPrimaId) {
+        List<BigDecimal> costos = detalleIngresoRepository.findLastCostoUnitarioByMateriaPrima(materiaPrimaId);
+        return costos.isEmpty() ? Optional.empty() : Optional.of(costos.get(0));
+    }
+
+    // Convertir entidad a DTO
+    private DetalleIngresoDTO convertToDTO(DetalleIngreso detalleIngreso) {
         DetalleIngresoDTO dto = DetalleIngresoDTO.builder()
-                .id(detalle.getId())
-                .ingresoMateriaPrimaId(detalle.getIngresoMateriaPrima().getId())
-                .materiaPrimaId(detalle.getMateriaPrima().getId())
-                .cantidad(detalle.getCantidad())
-                .costoUnitario(detalle.getCostoUnitario())
-                .costoTotal(detalle.getCostoTotal())
+                .id(detalleIngreso.getId())
+                .ingresoMateriaPrimaId(detalleIngreso.getIngresoMateriaPrima().getId())
+                .materiaPrimaId(detalleIngreso.getMateriaPrima().getId())
+                .cantidad(detalleIngreso.getCantidad())
+                .costoUnitario(detalleIngreso.getCostoUnitario())
+                .createdAt(detalleIngreso.getCreatedAt())
+                .updatedAt(detalleIngreso.getUpdatedAt())
                 .build();
 
-        // Agregar información de la materia prima
-        MateriaPrima materiaPrima = detalle.getMateriaPrima();
-        dto.setNombreMateriaPrima(materiaPrima.getNombre());
-        dto.setDescripcionMateriaPrima(materiaPrima.getDescripcion());
-        dto.setUnidadMedida(materiaPrima.getUnidadMedida());
-        dto.setEstadoMateriaPrima(materiaPrima.getEstado());
-
-        // Agregar información del ingreso
-        IngresoMateriaPrima ingreso = detalle.getIngresoMateriaPrima();
-        dto.setFechaIngreso(ingreso.getFecha());
-        // Agregar más campos del ingreso según sea necesario
-        // dto.setProveedorIngreso(ingreso.getProveedor());
-        // dto.setNumeroDocumento(ingreso.getNumeroDocumento());
-
         return dto;
+    }
+
+    // Convertir DTO a entidad
+    private DetalleIngreso convertToEntity(DetalleIngresoDTO dto) {
+        DetalleIngreso detalleIngreso = new DetalleIngreso();
+        detalleIngreso.setId(dto.getId());
+        detalleIngreso.setCantidad(dto.getCantidad());
+        detalleIngreso.setCostoUnitario(dto.getCostoUnitario());
+
+        return detalleIngreso;
     }
 }

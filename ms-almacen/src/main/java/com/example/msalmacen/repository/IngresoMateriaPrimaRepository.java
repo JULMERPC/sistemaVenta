@@ -59,6 +59,7 @@ public interface IngresoMateriaPrimaRepository extends JpaRepository<IngresoMate
     // Últimos ingresos por fecha
     List<IngresoMateriaPrima> findTop10ByOrderByFechaDescCreatedAtDesc();
 
+
     // Ingresos ordenados por fecha descendente
     List<IngresoMateriaPrima> findAllByOrderByFechaDescCreatedAtDesc();
 }
