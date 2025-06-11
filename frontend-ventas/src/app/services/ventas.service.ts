@@ -10,7 +10,7 @@ import {Venta} from "../models/venta.model";
   providedIn: 'root'
 })
 export class VentaService {
-  private apiUrl = `${environment.apiUrl}/ventas`; // Ajusta según tu configuración
+  private apiUrl = `http://localhost:8085/ventas`; // Ajusta según tu configuración
 
   constructor(private http: HttpClient) { }
 
