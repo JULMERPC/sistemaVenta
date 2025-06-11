@@ -1,40 +1,49 @@
 package com.example.msalmacen.util;
 
+import com.example.msalmacen.entity.MateriaPrima;
+import com.example.msalmacen.repository.MateriaPrimaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+
 @Component
-//public class MateriaPrimaSeeder implements CommandLineRunner {
-    public class MateriaPrimaSeeder  {
-//
-//    @Autowired
-//    private MateriaPrimaRepository materiaPrimaRepository;
-//
-//    @Override
-//    public void run(String... args) {
-//        if (materiaPrimaRepository.count() == 0) {
-//            List<MateriaPrima> materiasPrimas = Arrays.asList(
-//                    crearMateria("Tela Algodón Blanca", "Tela suave 100% algodón", "metros", new BigDecimal("50.00")),
-//                    crearMateria("Tela Denim Azul", "Tela resistente para jeans", "metros", new BigDecimal("30.00")),
-//                    crearMateria("Cierre Metálico", "Cierre metálico para chaquetas", "unidades", new BigDecimal("200")),
-//                    crearMateria("Hilo Poliéster", "Hilo resistente para costura", "rollos", new BigDecimal("100")),
-//                    crearMateria("Botones de Madera", "Botones decorativos naturales", "unidades", new BigDecimal("150")),
-//                    crearMateria("Tela Lino Beige", "Tela ligera ideal para verano", "metros", new BigDecimal("40")),
-//                    crearMateria("Tela Jersey", "Tela elástica para camisetas", "metros", new BigDecimal("25"))
-//            );
-//
-//            materiaPrimaRepository.saveAll(materiasPrimas);
-//            System.out.println("Seeder de MateriaPrima ejecutado correctamente con múltiples registros.");
-//        }
-//    }
-//
-//    private MateriaPrima crearMateria(String nombre, String descripcion, String unidad, BigDecimal stockMinimo) {
-//        MateriaPrima mp = new MateriaPrima();
-//        mp.setNombre(nombre);
-//        mp.setDescripcion(descripcion);
-//        mp.setUnidadMedida(unidad);
-//        mp.setStockMinimo(stockMinimo);
-//        mp.setEstado(true);
-//        mp.setFechaRegistro(LocalDateTime.now());
-//        return mp;
-//    }
+@Order(2)
+public class MateriaPrimaSeeder implements CommandLineRunner {
+
+    @Autowired
+    private MateriaPrimaRepository materiaPrimaRepository;
+
+    @Override
+    public void run(String... args) {
+        if (materiaPrimaRepository.count() == 0) {
+            List<MateriaPrima> productosTerminados = Arrays.asList(
+                    crearProducto("Polo Deportivo", "Polo de algodón con estampado deportivo", "unidades", new BigDecimal("20")),
+                    crearProducto("Jean Slim Fit", "Jean azul ajustado, talla estándar", "unidades", new BigDecimal("15")),
+                    crearProducto("Casaca Impermeable", "Casaca con capucha, ideal para invierno", "unidades", new BigDecimal("10")),
+                    crearProducto("Vestido de Fiesta", "Vestido elegante para eventos formales", "unidades", new BigDecimal("5")),
+                    crearProducto("Camisa Casual", "Camisa manga larga, ideal para oficina", "unidades", new BigDecimal("25"))
+            );
+
+            materiaPrimaRepository.saveAll(productosTerminados);
+            System.out.println("Seeder de MateriaPrima (ropa ya hecha) ejecutado correctamente.");
+        }
+    }
+
+    private MateriaPrima crearProducto(String nombre, String descripcion, String unidadMedida, BigDecimal stockMinimo) {
+        return MateriaPrima.builder()
+                .nombre(nombre)
+                .descripcion(descripcion)
+                .unidadMedida(unidadMedida)
+                .stockMinimo(stockMinimo)
+                .estado(true)
+                .fechaRegistro(LocalDateTime.now())
+                .build();
+    }
 }

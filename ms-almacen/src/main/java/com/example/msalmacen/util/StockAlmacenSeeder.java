@@ -8,12 +8,16 @@ import com.example.msalmacen.repository.MateriaPrimaRepository;
 import com.example.msalmacen.repository.StockAlmacenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Component
+@Order(5)
 public class StockAlmacenSeeder implements CommandLineRunner {
 
     @Autowired
@@ -28,24 +32,31 @@ public class StockAlmacenSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (stockAlmacenRepository.count() == 0) {
-            Optional<MateriaPrima> mp1 = materiaPrimaRepository.findById(1L);
-            Optional<MateriaPrima> mp2 = materiaPrimaRepository.findById(2L);
-            Optional<Almacen> almacen1 = almacenRepository.findById(1L);
-            Optional<Almacen> almacen2 = almacenRepository.findById(2L);
+            List<MateriaPrima> materias = materiaPrimaRepository.findAll();
+            List<Almacen> almacenes = almacenRepository.findAll();
 
-            if (mp1.isPresent() && mp2.isPresent() && almacen1.isPresent() && almacen2.isPresent()) {
-                StockAlmacen sa1 = new StockAlmacen(mp1.get(), almacen1.get(), new BigDecimal("150.00"));
-                StockAlmacen sa2 = new StockAlmacen(mp2.get(), almacen1.get(), new BigDecimal("90.00"));
-                StockAlmacen sa3 = new StockAlmacen(mp1.get(), almacen2.get(), new BigDecimal("60.00"));
-
-                stockAlmacenRepository.save(sa1);
-                stockAlmacenRepository.save(sa2);
-                stockAlmacenRepository.save(sa3);
-
-                System.out.println("Seeder de stock por almacén ejecutado correctamente.");
-            } else {
-                System.out.println("No se pudo ejecutar el seeder de StockAlmacen: faltan datos base (Almacen/MateriaPrima).");
+            if (materias.size() < 5 || almacenes.isEmpty()) {
+                System.out.println("⚠️ Se necesitan al menos 5 materias primas y al menos 1 almacén.");
+                return;
             }
+
+            Almacen almacen = almacenes.get(0); // puedes usar varios si quieres diversificar
+
+            for (int i = 0; i < 5; i++) {
+                MateriaPrima mp = materias.get(i);
+
+                StockAlmacen stock = new StockAlmacen(
+                        mp,
+                        almacen,
+                        BigDecimal.valueOf(50 + i * 10)
+                );
+
+                stock.setUltimaActualizacion(LocalDateTime.now());
+
+                stockAlmacenRepository.save(stock);
+            }
+
+            System.out.println("✅ Seeder de StockAlmacen ejecutado correctamente.");
         }
     }
 }

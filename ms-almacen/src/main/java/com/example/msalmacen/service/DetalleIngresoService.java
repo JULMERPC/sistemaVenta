@@ -179,12 +179,72 @@ public class DetalleIngresoService {
     }
 
     // Convertir DTO a entidad
-    private DetalleIngreso convertToEntity(DetalleIngresoDTO dto) {
-        DetalleIngreso detalleIngreso = new DetalleIngreso();
-        detalleIngreso.setId(dto.getId());
-        detalleIngreso.setCantidad(dto.getCantidad());
-        detalleIngreso.setCostoUnitario(dto.getCostoUnitario());
+//    private DetalleIngreso convertToEntity(DetalleIngresoDTO dto) {
+//        DetalleIngreso detalleIngreso = new DetalleIngreso();
+//        detalleIngreso.setId(dto.getId());
+//        detalleIngreso.setCantidad(dto.getCantidad());
+//        detalleIngreso.setCostoUnitario(dto.getCostoUnitario());
+//
+//        return detalleIngreso;
+//    }
 
-        return detalleIngreso;
+//    private DetalleIngreso convertToEntity(DetalleIngresoDTO dto) {
+//        DetalleIngreso detalleIngreso = new DetalleIngreso();
+//        detalleIngreso.setId(dto.getId());
+//        detalleIngreso.setCantidad(dto.getCantidad());
+//        detalleIngreso.setCostoUnitario(dto.getCostoUnitario());
+//
+//        // Asignar la entidad IngresoMateriaPrima
+//        if (dto.getIngresoMateriaPrimaId() != null) {
+//            IngresoMateriaPrima ingreso = ingresoMateriaPrimaRepository
+//                    .findById(dto.getIngresoMateriaPrimaId())
+//                    .orElseThrow(() -> new RuntimeException("Ingreso no encontrado"));
+//            detalleIngreso.setIngresoMateriaPrima(ingreso);
+//        }
+//
+//        // Asignar la entidad MateriaPrima
+//        if (dto.getMateriaPrimaId() != null) {
+//            MateriaPrima materiaPrima = materiaPrimaRepository
+//                    .findById(dto.getMateriaPrimaId())
+//                    .orElseThrow(() -> new RuntimeException("Materia Prima no encontrada"));
+//            detalleIngreso.setMateriaPrima(materiaPrima);
+//        }
+//
+//        return detalleIngreso;
+//    }
+
+    private DetalleIngresoDTO convertToDTO(DetalleIngreso detalleIngreso) {
+        DetalleIngresoDTO dto = DetalleIngresoDTO.builder()
+                .id(detalleIngreso.getId())
+                .ingresoMateriaPrimaId(
+                        detalleIngreso.getIngresoMateriaPrima() != null
+                                ? detalleIngreso.getIngresoMateriaPrima().getId()
+                                : null
+                )
+                .materiaPrimaId(
+                        detalleIngreso.getMateriaPrima() != null
+                                ? detalleIngreso.getMateriaPrima().getId()
+                                : null
+                )
+                .cantidad(detalleIngreso.getCantidad())
+                .costoUnitario(detalleIngreso.getCostoUnitario())
+                .createdAt(detalleIngreso.getCreatedAt())
+                .updatedAt(detalleIngreso.getUpdatedAt())
+                // 🔽 Aquí convertimos las entidades relacionadas a DTO
+                .ingresoMateriaPrima(
+                        detalleIngreso.getIngresoMateriaPrima() != null
+                                ? convertIngresoMateriaPrimaToDTO(detalleIngreso.getIngresoMateriaPrima())
+                                : null
+                )
+                .materiaPrima(
+                        detalleIngreso.getMateriaPrima() != null
+                                ? convertMateriaPrimaToDTO(detalleIngreso.getMateriaPrima())
+                                : null
+                )
+                .build();
+
+        return dto;
     }
+
+
 }

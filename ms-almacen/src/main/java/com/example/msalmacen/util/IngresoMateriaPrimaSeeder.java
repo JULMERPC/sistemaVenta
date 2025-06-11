@@ -6,46 +6,50 @@ import com.example.msalmacen.repository.AlmacenRepository;
 import com.example.msalmacen.repository.IngresoMateriaPrimaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
-public class IngresoMateriaPrimaSeeder {
-//
-//    @Autowired
-//    private IngresoMateriaPrimaRepository ingresoRepository;
-//
-//    @Autowired
-//    private AlmacenRepository almacenRepository;
-//
-//    @Override
-//    public void run(String... args) throws Exception {
-//        if (ingresoRepository.count() == 0) {
-//            Almacen almacen = almacenRepository.findById(1L).orElse(null);
-//
-//            if (almacen != null) {
-//                IngresoMateriaPrima ingreso1 = new IngresoMateriaPrima();
-//                ingreso1.setIdProveedor(1L); // Asegúrate que este ID de proveedor existe
-//                ingreso1.setAlmacen(almacen);
-//                ingreso1.setFechaIngreso(LocalDateTime.now().minusDays(2));
-//                ingreso1.setDocumentoRef("Factura 001-123456");
-//                ingreso1.setObservaciones("Entrega puntual y completa.");
-//
-//                IngresoMateriaPrima ingreso2 = new IngresoMateriaPrima();
-//                ingreso2.setIdProveedor(2L); // Otro proveedor existente
-//                ingreso2.setAlmacen(almacen);
-//                ingreso2.setFechaIngreso(LocalDateTime.now().minusDays(1));
-//                ingreso2.setDocumentoRef("Boleta 002-987654");
-//                ingreso2.setObservaciones("Entrega con faltantes reportados.");
-//
-//                ingresoRepository.save(ingreso1);
-//                ingresoRepository.save(ingreso2);
-//
-//                System.out.println("Seeder de ingresos de materia prima ejecutado correctamente.");
-//            } else {
-//                System.out.println("No se encontró el almacén con ID 1.");
-//            }
-//        }
-//    }
+@Order(3)
+public class IngresoMateriaPrimaSeeder implements CommandLineRunner {
+
+    @Autowired
+    private IngresoMateriaPrimaRepository ingresoMateriaPrimaRepository;
+
+    @Override
+    public void run(String... args) {
+        if (ingresoMateriaPrimaRepository.count() == 0) {
+            List<IngresoMateriaPrima> ingresos = Arrays.asList(
+                    crearIngreso(1L, 4L, LocalDate.of(2024, 6, 1), "Factura", "F001-000123", new BigDecimal("1500.00")),
+                    crearIngreso(2L, 5L, LocalDate.of(2024, 6, 3), "Boleta", "B001-000234", new BigDecimal("750.50")),
+                    crearIngreso(3L, 5L, LocalDate.of(2024, 6, 2), "Factura", "F002-000345", new BigDecimal("2200.00")),
+                    crearIngreso(1L, 6L, LocalDate.of(2024, 6, 4), "Boleta", "B003-000456", new BigDecimal("500.00")),
+                    crearIngreso(2L, 7L, LocalDate.of(2024, 6, 3), "Factura", "F004-000567", new BigDecimal("1800.75"))
+            );
+
+            ingresoMateriaPrimaRepository.saveAll(ingresos);
+            System.out.println("Seeder de IngresoMateriaPrima ejecutado correctamente.");
+        }
+    }
+
+    private IngresoMateriaPrima crearIngreso(Long proveedorId, Long almacenId, LocalDate fecha,
+                                             String tipoDocumento, String nroDocumento, BigDecimal total) {
+        LocalDateTime now = LocalDateTime.now();
+        return IngresoMateriaPrima.builder()
+                .proveedorId(proveedorId)
+                .almacenId(almacenId)
+                .fecha(fecha)
+                .tipoDocumento(tipoDocumento)
+                .nroDocumento(nroDocumento)
+                .total(total)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+    }
 }

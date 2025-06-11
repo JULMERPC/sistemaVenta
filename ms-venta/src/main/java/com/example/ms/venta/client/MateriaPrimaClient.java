@@ -7,15 +7,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
-@FeignClient(name = "ms-almacen-service") // ajusta la URL real
+// Especificar la ruta base correcta
+@FeignClient(name = "ms-almacen-service")
 public interface MateriaPrimaClient {
 
-    @GetMapping("/{id}")
+    @GetMapping("/api/materias-primas/{id}")
     MateriaPrimaDTO obtenerMateriaPrimaPorId(@PathVariable("id") Long id);
 
-    // Puedes añadir más endpoints según tus necesidades
+    @GetMapping("/api/materias-primas")
+    List<MateriaPrimaDTO> obtenerTodas();
 
-    @GetMapping("/materias-primas") // ajusta si la ruta real es distinta
-    List<MateriaPrimaDTO> obtenerMateriasPrimas();
-
+    @GetMapping("/activas")
+    List<MateriaPrimaDTO> obtenerMateriasPrimasActivas();
 }

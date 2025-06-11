@@ -1,5 +1,6 @@
 package com.example.ms.venta.repository;
 
+import com.example.ms.venta.dto.VentaDto;
 import com.example.ms.venta.entity.Venta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -87,4 +88,8 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
 
     // Buscar ventas por múltiples formas de pago
     List<Venta> findByFormaPagoIn(List<String> formasPago);
+
+    @Query("SELECT new com.example.ms.venta.dto.VentaDto(v.id, v.fecha, v.formaPago) FROM Venta v WHERE v.id = :ventaId")
+    VentaDto findVentaDtoById(@Param("ventaId") Long ventaId);
+
 }

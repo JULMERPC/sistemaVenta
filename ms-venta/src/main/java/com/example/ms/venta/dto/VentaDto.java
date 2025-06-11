@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
+//@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class VentaDto {
@@ -44,6 +44,30 @@ public class VentaDto {
             return clienteNombre + " " + clienteApellido;
         }
         return null;
+    }
+
+    public VentaDto(Long id, Long clienteId, LocalDate fecha, String formaPago, BigDecimal total, LocalDateTime createdAt, String clienteDni, String clienteApellido, String clienteNombre, LocalDateTime updatedAt) {
+        this.id = id;
+        this.clienteId = clienteId;
+        this.fecha = fecha;
+        this.formaPago = formaPago;
+        this.total = total;
+        this.createdAt = createdAt;
+        this.clienteDni = clienteDni;
+        this.clienteApellido = clienteApellido;
+        this.clienteNombre = clienteNombre;
+        this.updatedAt = updatedAt;
+    }
+
+    // Constructor específico para el query simplificado
+    public VentaDto(Long id, LocalDate fecha, String formaPago) {
+        this.id = id;
+        this.fecha = fecha;
+        this.formaPago = formaPago;
+    }
+
+
+    public VentaDto() {
     }
 
     // Getters y Setters explícitos (complementando Lombok)
