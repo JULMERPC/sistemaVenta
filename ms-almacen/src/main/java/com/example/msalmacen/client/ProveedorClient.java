@@ -13,7 +13,7 @@ import java.util.List;
 public interface ProveedorClient {
 
     @GetMapping("/api/proveedores/{id}")
-    ProveedorDTO obtenerProveedor(@PathVariable Long id);
+    ProveedorDTO obtenerProveedor(@PathVariable("id") Long id);
 
     @GetMapping("/api/proveedores")
     List<ProveedorDTO> obtenerTodosProveedores();
