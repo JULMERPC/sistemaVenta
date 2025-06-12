@@ -1,410 +1,286 @@
-<!-- src/app/components/lista-ventas/lista-ventas.component.html -->
-<div class="container">
-  <div class="header">
-    <h2>Lista de Ventas</h2>
-    <button class="btn btn-primary" onclick="console.log('Agregar nueva venta')">
-      + Nueva Venta
-    </button>
+<!-- src/app/components/ventas/listar-ventas/listar-ventas.component.html -->
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">
+          <i class="fas fa-shopping-cart me-2"></i>
+          Lista de Ventas
+        </h2>
+        <button class="btn btn-primary" routerLink="/ventas/nueva">
+          <i class="fas fa-plus me-2"></i>
+          Nueva Venta
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Filtros -->
-  <div class="filtros-container">
-    <div class="filtros">
-      <div class="filtro-fecha">
-        <label>Fecha Inicio:</label>
-        <input
-          type="date"
-          [(ngModel)]="fechaInicio"
-          class="form-control"
-        />
-      </div>
-      <div class="filtro-fecha">
-        <label>Fecha Fin:</label>
-        <input
-          type="date"
-          [(ngModel)]="fechaFin"
-          class="form-control"
-        />
-      </div>
-      <div class="filtro-actions">
-        <button
-          class="btn btn-secondary"
-          (click)="filtrarPorFecha()"
-          [disabled]="loading"
-        >
-          Filtrar
-        </button>
-        <button
-          class="btn btn-outline"
-          (click)="limpiarFiltros()"
-          [disabled]="loading"
-        >
-          Limpiar
-        </button>
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-filter me-2"></i>
+            Filtros
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Búsqueda general -->
+            <div class="col-md-4">
+              <label for="busqueda" class="form-label">Buscar</label>
+              <input
+                type="text"
+                class="form-control"
+                id="busqueda"
+                [(ngModel)]="terminoBusqueda"
+                placeholder="Cliente, DNI, forma de pago..."
+              >
+            </div>
+
+            <!-- Fecha inicio -->
+            <div class="col-md-3">
+              <label for="fechaInicio" class="form-label">Fecha Inicio</label>
+              <input
+                type="date"
+                class="form-control"
+                id="fechaInicio"
+                [(ngModel)]="fechaInicio"
+              >
+            </div>
+
+            <!-- Fecha fin -->
+            <div class="col-md-3">
+              <label for="fechaFin" class="form-label">Fecha Fin</label>
+              <input
+                type="date"
+                class="form-control"
+                id="fechaFin"
+                [(ngModel)]="fechaFin"
+              >
+            </div>
+
+            <!-- Botones -->
+            <div class="col-md-2 d-flex align-items-end">
+              <button
+                class="btn btn-outline-primary me-2"
+                (click)="filtrarPorFechas()"
+                [disabled]="!fechaInicio || !fechaFin"
+              >
+                <i class="fas fa-search"></i>
+              </button>
+              <button
+                class="btn btn-outline-secondary"
+                (click)="limpiarFiltros()"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Loading -->
-  <div *ngIf="loading" class="loading">
-    <div class="spinner"></div>
-    <p>Cargando ventas...</p>
+  <div *ngIf="loading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2">Cargando ventas...</p>
   </div>
 
   <!-- Error -->
-  <div *ngIf="error" class="error-message">
-    <p>{{ error }}</p>
-    <button class="btn btn-secondary" (click)="cargarVentas()">Reintentar</button>
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = ''"></button>
   </div>
 
   <!-- Tabla de ventas -->
-  <div *ngIf="!loading && !error" class="table-container">
-    <table class="table">
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th>Cliente</th>
-        <th>Fecha</th>
-        <th>Total</th>
-        <th>Forma de Pago</th>
-        <th>Acciones</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let venta of ventas" class="table-row">
-        <td>{{ venta.id }}</td>
-        <td>
-          <div class="cliente-info">
-            <span class="cliente-id">Cliente ID: {{ venta.clienteId }}</span>
-            <span *ngIf="venta.cliente" class="cliente-nombre">
-                {{ venta.cliente.nombre }} {{ venta.cliente.apellido }}
-              </span>
-          </div>
-        </td>
-        <td>{{ formatearFecha(venta.fecha) }}</td>
-        <td class="amount">{{ formatearMoneda(venta.total) }}</td>
-        <td>
-          <span class="forma-pago">{{ venta.formaPago }}</span>
-        </td>
-        <td>
-          <div class="actions">
-            <button
-              class="btn btn-sm btn-info"
-              (click)="verDetalles(venta.id)"
-              title="Ver detalles"
+  <div *ngIf="!loading && !error" class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            Ventas Encontradas: {{ totalElements || ventas.length }}
+          </h5>
+          <div class="d-flex align-items-center">
+            <label for="pageSize" class="form-label me-2 mb-0">Mostrar:</label>
+            <select
+              id="pageSize"
+              class="form-select form-select-sm"
+              [(ngModel)]="pageSize"
+              (change)="cargarVentas()"
+              style="width: auto;"
             >
-              👁️
-            </button>
-            <button
-              class="btn btn-sm btn-danger"
-              (click)="eliminarVenta(venta.id)"
-              title="Eliminar"
-            >
-              🗑️
-            </button>
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
           </div>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+        </div>
 
-    <!-- Mensaje cuando no hay ventas -->
-    <div *ngIf="ventas.length === 0" class="no-data">
-      <p>No se encontraron ventas</p>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>DNI</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Forma Pago</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let venta of buscarVentas(); let i = index">
+                <td>
+                  <strong>{{ venta.id }}</strong>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                      <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                      <div class="fw-bold">{{ obtenerNombreCliente(venta) }}</div>
+                      <small class="text-muted">ID: {{ venta.clienteId }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                    <span class="badge bg-secondary">
+                      {{ venta.cliente?.dni || 'N/A' }}
+                    </span>
+                </td>
+                <td>
+                  <div>
+                    <div>{{ formatearFecha(venta.fecha) }}</div>
+                    <small class="text-muted">{{ formatearFecha(venta.createdAt) }}</small>
+                  </div>
+                </td>
+                <td>
+                    <span class="fw-bold text-success">
+                      {{ formatearMoneda(venta.total) }}
+                    </span>
+                </td>
+                <td>
+                    <span
+                      class="badge"
+                      [ngClass]="{
+                        'bg-success': venta.formaPago.toLowerCase() === 'efectivo',
+                        'bg-info': venta.formaPago.toLowerCase() === 'tarjeta',
+                        'bg-warning': venta.formaPago.toLowerCase() === 'transferencia',
+                        'bg-secondary': !['efectivo', 'tarjeta', 'transferencia'].includes(venta.formaPago.toLowerCase())
+                      }"
+                    >
+                      {{ venta.formaPago }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge bg-success">
+                      <i class="fas fa-check-circle me-1"></i>
+                      Completada
+                    </span>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <button
+                      class="btn btn-sm btn-outline-primary"
+                      [routerLink]="['/ventas', venta.id]"
+                      title="Ver detalles"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-warning"
+                      [routerLink]="['/ventas', venta.id, 'editar']"
+                      title="Editar"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="eliminarVenta(venta)"
+                      title="Eliminar"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="card-footer" *ngIf="totalPages > 1">
+          <nav aria-label="Paginación de ventas">
+            <ul class="pagination justify-content-center mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 0">
+                <button class="page-link" (click)="irPrimeraPagina()">
+                  <i class="fas fa-angle-double-left"></i>
+                </button>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === 0">
+                <button class="page-link" (click)="irPaginaAnterior()">
+                  <i class="fas fa-angle-left"></i>
+                </button>
+              </li>
+
+              <li
+                *ngFor="let page of obtenerPaginasVisibles()"
+                class="page-item"
+                [class.active]="page === currentPage"
+              >
+                <button class="page-link" (click)="cambiarPagina(page)">
+                  {{ page + 1 }}
+                </button>
+              </li>
+
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                <button class="page-link" (click)="irPaginaSiguiente()">
+                  <i class="fas fa-angle-right"></i>
+                </button>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                <button class="page-link" (click)="irUltimaPagina()">
+                  <i class="fas fa-angle-double-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="text-center mt-2">
+            <small class="text-muted">
+              Mostrando {{ (currentPage * pageSize) + 1 }} -
+              {{ Math.min((currentPage + 1) * pageSize, totalElements) }}
+              de {{ totalElements }} registros
+            </small>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Paginación -->
-  <div *ngIf="!loading && !error && totalPages > 1" class="pagination-container">
-    <div class="pagination-info">
-      <span>
-        Mostrando {{ (currentPage * pageSize) + 1 }} -
-        {{ Math.min((currentPage + 1) * pageSize, totalElements) }}
-        de {{ totalElements }} ventas
-      </span>
+  <!-- Mensaje cuando no hay ventas -->
+  <div *ngIf="!loading && !error() && ventas.length === 0" class="text-center py-5">
+    <div class="mb-3">
+      <i class="fas fa-shopping-cart fa-3x text-muted"></i>
     </div>
-
-    <div class="pagination">
-      <button
-        class="btn btn-sm"
-        [disabled]="currentPage === 0"
-        (click)="paginaAnterior()"
-      >
-        ‹ Anterior
-      </button>
-
-      <button
-        *ngFor="let page of getPaginas()"
-        class="btn btn-sm"
-        [class.active]="page === currentPage"
-        (click)="irAPagina(page)"
-      >
-        {{ page + 1 }}
-      </button>
-
-      <button
-        class="btn btn-sm"
-        [disabled]="currentPage === totalPages - 1"
-        (click)="paginaSiguiente()"
-      >
-        Siguiente ›
-      </button>
-    </div>
+    <h4 class="text-muted">No hay ventas registradas</h4>
+    <p class="text-muted">Comience creando su primera venta</p>
+    <button class="btn btn-primary" routerLink="/ventas/nueva">
+      <i class="fas fa-plus me-2"></i>
+      Crear Primera Venta
+    </button>
   </div>
 </div>
-
-<style>
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-  }
-
-  .header h2 {
-    margin: 0;
-    color: #333;
-  }
-
-  .filtros-container {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-  }
-
-  .filtros {
-    display: flex;
-    gap: 15px;
-    align-items: end;
-    flex-wrap: wrap;
-  }
-
-  .filtro-fecha {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .filtro-fecha label {
-    font-weight: 500;
-    color: #555;
-  }
-
-  .filtro-actions {
-    display: flex;
-    gap: 10px;
-  }
-
-  .form-control {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-  }
-
-  .btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-  }
-
-  .btn-primary {
-    background: #007bff;
-    color: white;
-  }
-
-  .btn-primary:hover {
-    background: #0056b3;
-  }
-
-  .btn-secondary {
-    background: #6c757d;
-    color: white;
-  }
-
-  .btn-secondary:hover {
-    background: #545b62;
-  }
-
-  .btn-outline {
-    background: white;
-    color: #6c757d;
-    border: 1px solid #6c757d;
-  }
-
-  .btn-outline:hover {
-    background: #6c757d;
-    color: white;
-  }
-
-  .btn-info {
-    background: #17a2b8;
-    color: white;
-  }
-
-  .btn-danger {
-    background: #dc3545;
-    color: white;
-  }
-
-  .btn-sm {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .loading {
-    text-align: center;
-    padding: 40px;
-  }
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .error-message {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 20px;
-    border-radius: 4px;
-    text-align: center;
-    margin: 20px 0;
-  }
-
-  .table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  .table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .table th {
-    background: #f8f9fa;
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-    color: #333;
-    border-bottom: 2px solid #dee2e6;
-  }
-
-  .table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-  }
-
-  .table-row:hover {
-    background: #f8f9fa;
-  }
-
-  .cliente-info {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .cliente-id {
-    font-size: 12px;
-    color: #6c757d;
-  }
-
-  .cliente-nombre {
-    font-weight: 500;
-    color: #333;
-  }
-
-  .amount {
-    font-weight: 600;
-    color: #28a745;
-  }
-
-  .forma-pago {
-    background: #e9ecef;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    text-transform: uppercase;
-  }
-
-  .actions {
-    display: flex;
-    gap: 5px;
-  }
-
-  .no-data {
-    text-align: center;
-    padding: 40px;
-    color: #6c757d;
-  }
-
-  .pagination-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-    padding: 20px 0;
-  }
-
-  .pagination-info {
-    color: #6c757d;
-    font-size: 14px;
-  }
-
-  .pagination {
-    display: flex;
-    gap: 5px;
-  }
-
-  .pagination .btn.active {
-    background: #007bff;
-    color: white;
-  }
-
-  @media (max-width: 768px) {
-    .filtros {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .filtro-actions {
-      justify-content: center;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    .pagination-container {
-      flex-direction: column;
-      gap: 15px;
-    }
-  }
-</style>
