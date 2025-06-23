@@ -1,0 +1,64 @@
+<!-- src/app/components/login/login.component.html -->
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h2>Iniciar Sesión</h2>
+      <p>Ingresa tus credenciales para acceder</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Campo Usuario -->
+      <div class="form-group">
+        <label for="userName">Usuario</label>
+        <input
+          type="text"
+          id="userName"
+          formControlName="userName"
+          class="form-control"
+          [class.error]="userName?.invalid && userName?.touched"
+          placeholder="Ingresa tu usuario"
+        >
+        <div class="error-message" *ngIf="userName?.invalid && userName?.touched">
+          <small *ngIf="userName?.errors?.['required']">El usuario es requerido</small>
+          <small *ngIf="userName?.errors?.['minlength']">El usuario debe tener al menos 3 caracteres</small>
+        </div>
+      </div>
+
+      <!-- Campo Contraseña -->
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          class="form-control"
+          [class.error]="password?.invalid && password?.touched"
+          placeholder="Ingresa tu contraseña"
+        >
+        <div class="error-message" *ngIf="password?.invalid && password?.touched">
+          <small *ngIf="password?.errors?.['required']">La contraseña es requerida</small>
+          <small *ngIf="password?.errors?.['minlength']">La contraseña debe tener al menos 6 caracteres</small>
+        </div>
+      </div>
+
+      <!-- Mensaje de error general -->
+      <div class="alert alert-error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Botón de Login -->
+      <button
+        type="submit"
+        class="btn-login"
+        [disabled]="isLoading || loginForm.invalid"
+      >
+        <span *ngIf="isLoading" class="spinner"></span>
+        {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>¿No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
+    </div>
+  </div>
+</div>

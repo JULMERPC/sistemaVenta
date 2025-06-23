@@ -1,0 +1,17 @@
+<h2>Lista de Ventas</h2>
+<table>
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Fecha</th>
+    <th>Total</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let venta of ventas">
+    <td>{{ venta.id }}</td>
+    <td>{{ venta.fecha | date:'short' }}</td>
+    <td>{{ venta.total | currency }}</td>
+  </tr>
+  </tbody>
+</table>

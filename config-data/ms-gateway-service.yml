@@ -28,7 +28,8 @@ spring:
           uri: lb://ms-venta-service
           predicates:
             - Path=/api/clientes/**, /api/detalle-ventas/**, /api/ventas/**
-
+          filters:
+            - AuthFilter
 
         - id: ms-auth-service
           uri: lb://ms-auth-service
