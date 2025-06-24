@@ -1,0 +1,18 @@
+<header class="header">
+  <span class="logo">Sistema de Ventas</span>
+  <button (click)="toggleSidebar()">☰</button>
+  <button (click)="logout()">Cerrar sesión</button>
+</header>
+
+<div class="container">
+  <nav class="sidebar" [class.hidden]="!showSidebar">
+    <a *ngFor="let acceso of accesos" [routerLink]="acceso.url">
+      <i class="fa" [ngClass]="acceso.icono"></i> {{ acceso.nombre | titlecase }}
+    </a>
+  </nav>
+
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

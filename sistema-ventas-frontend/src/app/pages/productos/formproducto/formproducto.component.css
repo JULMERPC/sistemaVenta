@@ -1,0 +1,17 @@
+.form-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 320px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 15px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  transform: translateY(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.form-container.visible {
+  transform: translateY(0);
+}

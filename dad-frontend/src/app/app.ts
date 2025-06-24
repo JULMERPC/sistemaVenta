@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {ApiService} from './core/services/api.service';
 
@@ -10,8 +10,6 @@ import {ApiService} from './core/services/api.service';
 })
 export class App {
   protected title = 'dad-frontend';
-
-
 
   constructor(private apiService: ApiService) {
   }

@@ -1,5 +1,5 @@
 export const resources = {
-  venta: {
-    ventas: "/api/ventas"
+  ventas: {
+    venta: "api/ventas"
   }
 };

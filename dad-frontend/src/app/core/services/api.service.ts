@@ -8,7 +8,7 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   getVentas(): Observable<any[]> {
-    return this.http.get<any[]>(resources.venta.ventas); // Se agregará la baseUrl por el interceptor
+    return this.http.get<any[]>(resources.ventas.venta); // Se agregará la baseUrl por el interceptor
   }
 
   crearUsuario(data: any): Observable<any> {

@@ -1,0 +1,68 @@
+<mat-card class="tabla-ventas">
+  <h2 class="titulo">🧾 Lista de Ventas</h2>
+  <mat-card class="buscadores" style="margin-bottom: 20px;">
+    <mat-form-field appearance="outline" style="margin-right: 10px; width: 200px;">
+      <mat-label>Buscar por Serie</mat-label>
+      <input matInput [(ngModel)]="filtroSerie" (keyup.enter)="buscarSerie()" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" style="margin-right: 10px; width: 200px;">
+      <mat-label>Buscar por Número</mat-label>
+      <input matInput [(ngModel)]="filtroNumero" (keyup.enter)="buscarNumero()" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" style="margin-right: 10px; width: 200px;">
+      <mat-label>Desde</mat-label>
+      <input matInput [matDatepicker]="picker1" [(ngModel)]="filtroFechaInicio" />
+      <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+      <mat-datepicker #picker1></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" style="margin-right: 10px; width: 200px;">
+      <mat-label>Hasta</mat-label>
+      <input matInput [matDatepicker]="picker2" [(ngModel)]="filtroFechaFin" />
+      <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+      <mat-datepicker #picker2></mat-datepicker>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="buscarPorFechas()">🔎 Buscar Fechas</button>
+    <button mat-button color="warn" (click)="cargarVentas()">↺ Limpiar</button>
+  </mat-card>
+
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z1" style="width: 100%">
+
+    <!-- Fecha -->
+    <ng-container matColumnDef="fecha">
+      <th mat-header-cell *matHeaderCellDef> Fecha </th>
+      <td mat-cell *matCellDef="let venta"> {{ venta.fechaVenta | date: 'dd/MM/yyyy HH:mm' }} </td>
+    </ng-container>
+
+    <!-- Código -->
+    <ng-container matColumnDef="codigo">
+      <th mat-header-cell *matHeaderCellDef> Código </th>
+      <td mat-cell *matCellDef="let venta"> {{ venta.serie }}-{{ venta.numero }} </td>
+    </ng-container>
+
+    <!-- Total -->
+    <ng-container matColumnDef="total">
+      <th mat-header-cell *matHeaderCellDef> Total </th>
+      <td mat-cell *matCellDef="let venta"> S/ {{ venta.total | number:'1.2-2' }} </td>
+    </ng-container>
+
+    <!-- PDF -->
+    <ng-container matColumnDef="pdf">
+      <th mat-header-cell *matHeaderCellDef> PDF </th>
+      <td mat-cell *matCellDef="let venta">
+        <button mat-icon-button color="primary" (click)="verPdf(venta)" matTooltip="Ver PDF">
+          <mat-icon>picture_as_pdf</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <!-- Paginador -->
+  <mat-paginator [pageSizeOptions]="[5, 10, 15]" [pageSize]="10" showFirstLastButtons></mat-paginator>
+</mat-card>

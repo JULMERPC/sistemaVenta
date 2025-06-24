@@ -1,0 +1,45 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #343a40;
+  color: white;
+  padding: 10px;
+}
+
+.logo {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.container {
+  display: flex;
+}
+
+.sidebar {
+  width: 200px;
+  background: #f8f9fa;
+  padding: 15px;
+  min-height: 100vh;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+.sidebar a {
+  display: block;
+  padding: 8px;
+  text-decoration: none;
+  color: #333;
+}
+
+.sidebar a:hover {
+  background: #e2e6ea;
+}
+
+.content {
+  flex-grow: 1;
+  padding: 20px;
+}

@@ -12,6 +12,16 @@ eureka:
 spring:
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:4200"
+            allowedHeaders: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
 
       discovery:
         locator:
@@ -44,8 +54,12 @@ spring:
 #          filters:
 #            - AuthFilter
 
-
-
+        - id: ms-catalogo-service
+            uri: lb://ms-catalogo-service
+            predicates:
+              - Path=/categorias/**
+            filters:
+              - AuthFilter
 
         - id: ms-almacen-service
           uri: lb://ms-almacen-service
