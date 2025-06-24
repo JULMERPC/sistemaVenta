@@ -20,9 +20,60 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
         super(Config.class);
         this.webClient = webClient;
     }
+//    @Override
+//    public GatewayFilter apply(Config config) {
+//        return (((exchange, chain) -> {
+//            if(!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION))
+//                return onError(exchange, HttpStatus.BAD_REQUEST);
+//            String tokenHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
+//            String [] chunks = tokenHeader.split(" ");
+//            if(chunks.length != 2 || !chunks[0].equals("Bearer"))
+//                return onError(exchange, HttpStatus.BAD_REQUEST);
+//            return webClient.build()
+//                    .post()
+//                    .uri("http://ms-auth-service/auth/validate?token=" + chunks[1])
+//                    .retrieve().bodyToMono(TokenDto.class)
+//                    .map(t -> {
+//                        t.getToken();
+//                        return exchange;
+//                    }).flatMap(chain::filter);
+//        }));
+//    }
+//@Override
+//public GatewayFilter apply(Config config) {
+//    return (exchange, chain) -> {
+//        // ⛔ Ignorar preflight OPTIONS (CORS)
+//        if (exchange.getRequest().getMethod().name().equalsIgnoreCase("OPTIONS")) {
+//            return chain.filter(exchange);
+//        }
+//
+//        if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+//            return onError(exchange, HttpStatus.BAD_REQUEST);
+//        }
+//
+//        String tokenHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
+//        String[] chunks = tokenHeader.split(" ");
+//        if (chunks.length != 2 || !chunks[0].equals("Bearer")) {
+//            return onError(exchange, HttpStatus.BAD_REQUEST);
+//        }
+//
+//        return webClient.build()
+//                .post()
+//                .uri("http://ms-auth-service/auth/validate?token=" + chunks[1])
+//                .retrieve()
+//                .bodyToMono(TokenDto.class)
+//                .map(t -> exchange)
+//                .flatMap(chain::filter);
+//    };
+//}
+
     @Override
     public GatewayFilter apply(Config config) {
         return (((exchange, chain) -> {
+            String path = exchange.getRequest().getURI().getPath();
+            if (path.startsWith("/imagenes")) {
+                return chain.filter(exchange); // Deja pasar sin validar token
+            }
             if(!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION))
                 return onError(exchange, HttpStatus.BAD_REQUEST);
             String tokenHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
@@ -31,7 +82,7 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
                 return onError(exchange, HttpStatus.BAD_REQUEST);
             return webClient.build()
                     .post()
-                    .uri("http://ms-auth-service/auth/validate?token=" + chunks[1])
+                    .uri("http://jea-auth-service/auth/validate?token=" + chunks[1])
                     .retrieve().bodyToMono(TokenDto.class)
                     .map(t -> {
                         t.getToken();
@@ -39,6 +90,7 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
                     }).flatMap(chain::filter);
         }));
     }
+
 
 
     public Mono<Void> onError(ServerWebExchange exchange, HttpStatus status){
