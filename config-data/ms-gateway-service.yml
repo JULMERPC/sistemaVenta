@@ -55,11 +55,13 @@ spring:
 #            - AuthFilter
 
         - id: ms-catalogo-service
-            uri: lb://ms-catalogo-service
-            predicates:
-              - Path=/categorias/**
-            filters:
-              - AuthFilter
+          uri: lb://ms-catalogo-service
+          predicates:
+            - Path=/categorias/**
+          filters:
+            - AuthFilter
+
+
 
         - id: ms-almacen-service
           uri: lb://ms-almacen-service
