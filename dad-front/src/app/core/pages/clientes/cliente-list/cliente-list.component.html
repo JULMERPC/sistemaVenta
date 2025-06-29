@@ -1,0 +1,292 @@
+<!-- src/app/pages/clientes/cliente-list/cliente-list.component.html -->
+<div class="container-fluid p-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="fas fa-users text-primary me-2"></i>
+      Gestión de Clientes
+    </h2>
+    <button class="btn btn-primary" (click)="abrirFormulario()">
+      <i class="fas fa-plus me-2"></i>
+      Nuevo Cliente
+    </button>
+  </div>
+
+  <!-- Estadísticas Cards -->
+  <div class="row mb-4" *ngIf="estadisticas">
+    <div class="col-md-4">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4>{{ estadisticas.total }}</h4>
+              <p class="mb-0">Total Clientes</p>
+            </div>
+            <i class="fas fa-users fa-2x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4>{{ estadisticas.conEmail }}</h4>
+              <p class="mb-0">Con Email</p>
+            </div>
+            <i class="fas fa-envelope fa-2x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4>{{ estadisticas.conTelefono }}</h4>
+              <p class="mb-0">Con Teléfono</p>
+            </div>
+            <i class="fas fa-phone fa-2x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros y búsqueda -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-search"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Buscar por nombre, apellido o DNI..."
+              [(ngModel)]="terminoBusqueda"
+              (input)="buscarClientes()"
+            >
+          </div>
+        </div>
+        <div class="col-md-6 text-end">
+          <button class="btn btn-outline-secondary me-2" (click)="limpiarBusqueda()">
+            <i class="fas fa-eraser me-1"></i>
+            Limpiar
+          </button>
+          <button class="btn btn-outline-success" (click)="exportarExcel()">
+            <i class="fas fa-file-excel me-1"></i>
+            Exportar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de clientes -->
+  <div class="card">
+    <div class="card-body">
+      <div *ngIf="cargando" class="text-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!cargando && clientes.length === 0" class="text-center p-4 text-muted">
+        <i class="fas fa-users fa-3x mb-3 opacity-50"></i>
+        <h5>No hay clientes registrados</h5>
+        <p>Comienza agregando tu primer cliente</p>
+      </div>
+
+      <div *ngIf="!cargando && clientes.length > 0" class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Nombre Completo</th>
+            <th>DNI</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Dirección</th>
+            <th>Fecha Registro</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let cliente of clientes; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>
+              <strong>{{ cliente.nombre }} {{ cliente.apellido }}</strong>
+            </td>
+            <td>
+              <span class="badge bg-secondary">{{ cliente.dni }}</span>
+            </td>
+            <td>
+                <span *ngIf="cliente.telefono; else sinTelefono">
+                  <i class="fas fa-phone text-success me-1"></i>
+                  {{ cliente.telefono }}
+                </span>
+              <ng-template #sinTelefono>
+                <span class="text-muted">-</span>
+              </ng-template>
+            </td>
+            <td>
+                <span *ngIf="cliente.email; else sinEmail">
+                  <i class="fas fa-envelope text-primary me-1"></i>
+                  {{ cliente.email }}
+                </span>
+              <ng-template #sinEmail>
+                <span class="text-muted">-</span>
+              </ng-template>
+            </td>
+            <td>
+                <span *ngIf="cliente.direccion; else sinDireccion">
+                  {{ cliente.direccion }}
+                </span>
+              <ng-template #sinDireccion>
+                <span class="text-muted">-</span>
+              </ng-template>
+            </td>
+            <td>
+              <small class="text-muted">
+                {{ cliente.createdAt | date:'dd/MM/yyyy' }}
+              </small>
+            </td>
+            <td class="text-center">
+              <div class="btn-group" role="group">
+                <button
+                  class="btn btn-sm btn-outline-info"
+                  (click)="verDetalle(cliente)"
+                  title="Ver detalles"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-warning"
+                  (click)="editarCliente(cliente)"
+                  title="Editar"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="confirmarEliminar(cliente)"
+                  title="Eliminar"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal para formulario de cliente -->
+<div class="modal fade" id="clienteModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-user me-2"></i>
+          {{ modoEdicion ? 'Editar Cliente' : 'Nuevo Cliente' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="clienteForm" (ngSubmit)="guardarCliente()">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nombre *</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="nombre"
+                [class.is-invalid]="clienteForm.get('nombre')?.invalid && clienteForm.get('nombre')?.touched"
+              >
+              <div class="invalid-feedback">
+                El nombre es obligatorio
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Apellido *</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="apellido"
+                [class.is-invalid]="clienteForm.get('apellido')?.invalid && clienteForm.get('apellido')?.touched"
+              >
+              <div class="invalid-feedback">
+                El apellido es obligatorio
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">DNI *</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="dni"
+                [class.is-invalid]="clienteForm.get('dni')?.invalid && clienteForm.get('dni')?.touched"
+              >
+              <div class="invalid-feedback">
+                El DNI es obligatorio
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Teléfono</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="telefono"
+              >
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              formControlName="email"
+              [class.is-invalid]="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched"
+            >
+            <div class="invalid-feedback">
+              Ingrese un email válido
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Dirección</label>
+            <textarea
+              class="form-control"
+              formControlName="direccion"
+              rows="2"
+            ></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="guardarCliente()"
+          [disabled]="clienteForm.invalid || guardando"
+        >
+          <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
